@@ -42,25 +42,24 @@ header small{display:block;color:var(--mu);font-weight:400}
 .bar{display:flex;gap:8px;margin-top:12px;border-top:1px solid var(--bd);padding-top:10px}.bar button{flex:1;background:transparent;color:var(--tx);border:1px solid var(--bd)}
 .bar .on{background:rgba(212,162,76,.25);color:var(--gold2);animation:beat .4s}@keyframes beat{50%{transform:scale(1.15)}}
 .cm{background:rgba(0,0,0,.22);border-radius:12px;padding:8px 12px;margin-top:8px;font-size:.9rem;animation:up .4s both}.cm b{color:var(--gold2)}
-.folders{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:16px}.fol{position:relative;padding:18px 10px;text-align:center;cursor:pointer;background:var(--card);border:1px solid var(--bd);border-radius:18px;transition:.3s;animation:up .6s both}.fol:hover{transform:translateY(-5px) rotate(-1deg);border-color:var(--gold);box-shadow:0 10px 28px rgba(212,162,76,.3)}.fol span{font-size:2.4rem;display:block;animation:fl 5s ease-in-out infinite}.fol b{display:block;margin:6px 0 2px}.fol small{color:var(--mu)}.fol i{position:absolute;top:6px;left:8px;font-style:normal;font-size:.75rem;padding:2px 6px;border-radius:8px;background:rgba(0,0,0,.35)}.toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);z-index:9;max-width:90%;padding:12px 18px;border-radius:14px;background:#12294a;border:1px solid var(--gold);color:var(--tx);font-size:.9rem;line-height:1.7;animation:up .4s both}.rs{margin-top:10px;font-size:.9rem;color:var(--mu);cursor:pointer;display:inline-block}.rs span{font-size:1.05rem;letter-spacing:-2px}.pick{display:flex;justify-content:space-around;margin-top:8px;padding:8px;border-radius:99px;background:rgba(0,0,0,.4);border:1px solid var(--bd);animation:pop .35s both}.pick span{font-size:1.7rem;cursor:pointer;transition:.2s}.pick span:hover{transform:translateY(-8px) scale(1.4)}.pdf{margin-top:8px;border-radius:14px;overflow:hidden;background:rgba(0,0,0,.25);border:1px solid var(--bd)}.pdf img{width:100%;max-height:360px;object-fit:cover;object-position:top;background:#fff;display:block}.pdf img[src=""]{display:none}.pm{display:flex;gap:10px;align-items:center;padding:10px 12px}.pm span{font-size:1.8rem}.pb{display:flex;gap:8px;padding:0 12px 12px}.pb button{flex:1}.empty{text-align:center;color:var(--mu);padding:40px}.hide{display:none!important}
+.folders{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:16px}.fol{position:relative;padding:18px 10px;text-align:center;cursor:pointer;background:var(--card);border:1px solid var(--bd);border-radius:18px;transition:.3s;animation:up .6s both}.fol:hover{transform:translateY(-5px) rotate(-1deg);border-color:var(--gold);box-shadow:0 10px 28px rgba(212,162,76,.3)}.fol span{font-size:2.4rem;display:block;animation:fl 5s ease-in-out infinite}.fol b{display:block;margin:6px 0 2px}.fol small{color:var(--mu)}.fol i{position:absolute;top:6px;left:8px;font-style:normal;font-size:.75rem;padding:2px 6px;border-radius:8px;background:rgba(0,0,0,.35)}.toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);z-index:9;max-width:90%;padding:12px 18px;border-radius:14px;background:#12294a;border:1px solid var(--gold);color:var(--tx);font-size:.9rem;line-height:1.7;animation:up .4s both}.rs{margin-top:10px;font-size:.9rem;color:var(--mu);cursor:pointer;display:inline-block}.rs span{font-size:1.05rem;letter-spacing:-2px}.pick{display:flex;justify-content:space-around;margin-top:8px;padding:8px;border-radius:99px;background:rgba(0,0,0,.4);border:1px solid var(--bd);animation:pop .35s both}.pick span{font-size:1.7rem;cursor:pointer;transition:.2s}.pick span:hover{transform:translateY(-8px) scale(1.4)}.pdf{margin-top:8px;border-radius:14px;overflow:hidden;background:rgba(0,0,0,.25);border:1px solid var(--bd)}.pdf img{width:100%;max-height:360px;object-fit:cover;object-position:top;background:#fff;display:block}.pdf img[src=""]{display:none}.pm{display:flex;gap:10px;align-items:center;padding:10px 12px}.pm span{font-size:1.8rem}.pb{display:flex;gap:8px;padding:0 12px 12px}.pb button{flex:1}.dev{position:relative;z-index:1;text-align:center;color:var(--mu);font-size:.85rem;padding:18px 0 28px}.dev b{color:var(--gold2)}.empty{text-align:center;color:var(--mu);padding:40px}.hide{display:none!important}
 </style>
 </head>
 <body>
 <div class="orb o1"></div><div class="orb o2"></div>
 <div class="wrap">
 
-<div id="login" class="glass login hide">
+<div id="login" class="glass login">
   <img class="logo" data-l alt="شعار كلية الحقوق">
   <h1>طلاب الفرقة الثالثة</h1>
   <p class="sub">كلية الحقوق – جامعة المنصورة</p>
-  <input id="u" placeholder="إيميل الأدمن" type="email" autocomplete="off" autocapitalize="off">
+  <input id="u" placeholder="اسم المستخدم" autocomplete="off" autocapitalize="off">
   <input id="p" type="password" placeholder="كلمة المرور" autocomplete="off">
   <div class="err" id="e1"></div>
   <button class="full" id="go">دخول</button>
-  <button class="ghost full" id="bk">رجوع</button>
 </div>
 
-<div id="gate" class="glass login">
+<div id="gate" class="glass login hide">
   <img class="logo" data-l alt="">
   <h1>أهلاً بيك 👋</h1>
   <p class="sub">اكتب اسمك الأول والأخير ورقم موبايلك علشان تدخل</p>
@@ -86,6 +85,7 @@ header small{display:block;color:var(--mu);font-weight:400}
 </div>
 </div>
 
+<div class="dev">مطور النظام: <b dir="ltr">Abdulrahman Osama</b></div>
 <div id="toast" class="toast hide"></div>
 <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script type="module">
@@ -116,15 +116,15 @@ function subscribe(){if(subs)return;subs=1;const sub=(n,f)=>db.collection(n).onS
   sub('posts',x=>P=x);if(role==='admin')sub('members',x=>M=x)}
 onAuthStateChanged(auth,u=>{if(!u||role)return;uid=u.uid;
   if(u.email&&u.email===ADMIN){role='admin';name='الإدارة';start()}
-  else if(u.isAnonymous&&lsGet('lawname')){role='guest';name=lsGet('lawname');start()}});
+  else if(u.isAnonymous){role='guest';name='زائر';start()}});
 
 $('go').onclick=async()=>{
   const u=$('u').value.trim(),p=$('p').value,er=$('e1');er.textContent='';
   if(u.includes('@')){try{const c=await signInWithEmailAndPassword(auth,u,p);if(c.user.email!==ADMIN){await signOut(auth);throw 0}role='admin';name='الإدارة';uid=c.user.uid;start()}catch(x){er.textContent='بيانات الأدمن غلط'}}
+  else if(u==='law'&&p==='myu'){try{const c=await signInAnonymously(auth);uid=c.user.uid;role='guest';name='زائر';start()}catch(x){er.textContent='مش قادر أدخلك دلوقتي ('+(x.code||x.message||'')+')'}}
   else er.textContent='بيانات الدخول غلط، جرّب تاني';
 };
 $('adm').onclick=()=>{$('gate').classList.add('hide');$('login').classList.remove('hide')};
-$('bk').onclick=()=>{$('login').classList.add('hide');$('gate').classList.remove('hide')};
 $('p').onkeydown=e=>{if(e.key==='Enter')$('go').click()};
 $('ok').onclick=async()=>{
   const er=$('e2');er.textContent='';
@@ -158,7 +158,7 @@ $('pub').onclick=async()=>{
 };
 
 $('addf').onclick=async()=>{const v=$('fon').value.trim();if(!v||!db)return;$('fon').value='';const t=Date.now();await db.collection('posts').doc('f'+t).set({isf:1,text:v,ts:t})};
-function rm(){const b=$('memb'),m=$('mem');if(role!=='admin'){b.classList.add('hide');m.classList.add('hide');return}
+function rm(){const b=$('memb'),m=$('mem');if(true){b.classList.add('hide');m.classList.add('hide');return}
   b.classList.remove('hide');b.textContent='👥 الطلاب ('+M.length+')';if(!showM){m.classList.add('hide');return}m.classList.remove('hide');
   m.innerHTML='<b>الطلاب المسجلين</b>'+(M.length?[...M].sort((a,b)=>b.ts-a.ts).map(x=>`<div class="cm"><b>${esc(x.name)}</b> — <span dir="ltr">${esc(x.phone)}</span></div>`).join(''):'<div class="cm">لسه مفيش حد سجل</div>')+'<button class="full" id="csv">تحميل القائمة (CSV)</button>'}
 $('memb').onclick=()=>{showM=!showM;rm()};
