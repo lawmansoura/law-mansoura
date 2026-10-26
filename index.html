@@ -76,6 +76,7 @@ header small{display:block;color:var(--mu);font-weight:400}
     <textarea id="txt" rows="3" placeholder="اكتب خبر أو رسالة للطلاب..."></textarea>
     <div class="row"><select id="kind"><option value="خبر">📰 خبر</option><option value="رسالة">💬 رسالة</option><option value="ملف">📎 ملف</option><option value="صورة">🖼️ صورة</option></select>
     <input id="fl" type="file"></div>
+    <input id="lk" dir="ltr" placeholder="🔗 أو رابط ملف Google Drive / أي رابط https">
     <div class="err" id="e3"></div>
     <button class="full" id="pub">نشر</button>
   </div>
@@ -101,12 +102,12 @@ auth.languageCode='ar';
 db={collection:n=>({doc:id=>({set:o=>setDoc(doc(fs,n,id),o),delete:()=>deleteDoc(doc(fs,n,id))}),onSnapshot:(f,e)=>onSnapshot(collection(fs,n),s=>f({docs:s.docs.map(d=>({id:d.id,data:()=>d.data()}))}),e)})};
 const B64=b=>new Promise(r=>{const x=new FileReader();x.onload=()=>r(x.result.split(',')[1]);x.readAsDataURL(b)});
 async function shrink(f){if(!f.type.startsWith('image/')||f.type==='image/gif')return f;try{const im=await createImageBitmap(f),s=Math.min(1,1400/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext('2d').drawImage(im,0,0,c.width,c.height);return await new Promise(r=>c.toBlob(x=>r(x||f),'image/jpeg',.8))}catch(e){return f}}
-assets={upload:async(f,pr)=>{f=await shrink(f);if(f.size>5*1024*1024)throw new Error('الملف أكبر من 5 ميجا، حط رابط درايف في النص بدله');const d=await B64(f),id='b'+Date.now(),CH=500000,n=Math.ceil(d.length/CH);for(let i=0;i<n;i++){await Promise.race([setDoc(doc(fs,'blobs',id+'_'+i),{d:d.slice(i*CH,(i+1)*CH)}),new Promise((_,j)=>setTimeout(()=>j(new Error('النت بطيء أو الرفع وقف، جرّب تاني')),90000))]);pr&&pr(i+1,n)}return{id,n,type:f.type,size:f.size}}};
+assets={upload:async(f,pr)=>{f=await shrink(f);if(f.size>5*1024*1024)throw new Error('الملف أكبر من 5 ميجا، حط رابط درايف في النص بدله');const d=await B64(f),id='b'+Date.now(),CH=500000,n=Math.ceil(d.length/CH);pr&&pr(0,n);for(let i=0;i<n;i++){await Promise.race([setDoc(doc(fs,'blobs',id+'_'+i),{d:d.slice(i*CH,(i+1)*CH)}),new Promise((_,j)=>setTimeout(()=>j(new Error('النت بطيء أو الرفع وقف، جرّب تاني')),90000))]);pr&&pr(i+1,n)}return{id,n,type:f.type,size:f.size}}};
 const getB=p=>BC[p.fid]||(BC[p.fid]=blob(p).catch(e=>{delete BC[p.fid];throw e}));
-const BL={},BC={},PV={};
+const BL={},BC={},PV={},vw={},did=u=>{const m=u.match(/\/d\/([\w-]+)/)||u.match(/[?&]id=([\w-]+)/);return m&&u.includes('drive.google.com')?m[1]:null};
 async function blob(p){const s=await Promise.all(Array.from({length:p.n},(_,i)=>getDoc(doc(fs,'blobs',p.fid+'_'+i))));const bin=atob(s.map(x=>x.data().d).join('')),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return new Blob([u],{type:p.ftype||'application/octet-stream'})}
 function loadImgs(){document.querySelectorAll('img[data-fid]').forEach(async im=>{const id=im.dataset.fid;if(im.getAttribute('src'))return;if(BL[id]){im.src=BL[id];return}try{BL[id]=URL.createObjectURL(await getB({fid:id,n:+im.dataset.n,ftype:im.dataset.t}));im.src=BL[id]}catch(e){}})}
-async function save(p){try{const b=await getB(p),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=p.fname||'file';a.click()}catch(e){}}
+async function save(p){const t=$('toast');try{t.textContent='جاري التحميل...';t.classList.remove('hide');const b=await getB(p),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=p.fname||'file';a.style.display='none';document.body.appendChild(a);a.click();setTimeout(()=>{a.remove();t.classList.add('hide')},1500)}catch(e){t.textContent='التحميل فشل: '+(e.code||e.message||'');setTimeout(()=>t.classList.add('hide'),6000)}}
 const rmP=async x=>{if(x.fid)for(let i=0;i<x.n;i++)await db.collection('blobs').doc(x.fid+'_'+i).delete();await db.collection('posts').doc(x.id).delete()};
 let subs=0;
 function subscribe(){if(subs)return;subs=1;const sub=(n,f)=>db.collection(n).onSnapshot(s=>{f(s.docs.map(d=>({id:d.id,...d.data()})));render()},()=>{});
@@ -131,7 +132,7 @@ $('ok').onclick=async()=>{
   $('ok').disabled=true;
   try{const c=await signInAnonymously(auth);uid=c.user.uid;role='guest';name=a+' '+b;lsSet('lawname',name);
     try{await db.collection('members').doc(uid).set({name,phone:ph,ts:Date.now()})}catch(x){}
-    start()}catch(x){er.textContent='مش قادر أسجلك دلوقتي، جرّب تاني'}
+    start()}catch(x){er.textContent='مش قادر أسجلك دلوقتي ('+(x.code||x.message||'')+')'}
   $('ok').disabled=false;
 };
 function start(){subscribe();$('login').classList.add('hide');$('gate').classList.add('hide');$('app').classList.remove('hide');
@@ -139,16 +140,17 @@ function start(){subscribe();$('login').classList.add('hide');$('gate').classLis
 $('out').onclick=async()=>{try{await signOut(auth)}catch(e){}location.reload()};
 
 $('pub').onclick=async()=>{
-  const t=$('txt').value.trim(),f=$('fl').files[0],e=$('e3');e.textContent='';
-  if(!t&&!f){e.textContent='اكتب حاجة أو اختار ملف';return}
+  const t=$('txt').value.trim(),f=$('fl').files[0],lkv=$('lk').value.trim(),e=$('e3');e.textContent='';
+  if(!t&&!f&&!lkv){e.textContent='اكتب حاجة أو اختار ملف أو حط رابط';return}
+  if(lkv&&!/^https:\/\//i.test(lkv)){e.textContent='الرابط لازم يبدأ بـ https://';return}
   if(!db){e.textContent='النشر مش متاح دلوقتي';return}
   $('pub').disabled=true;$('pub').textContent='جاري النشر...';
   try{
-    const o={text:t,kind:$('kind').value,ts:Date.now(),fo:cur||''};
+    const o={text:t,kind:$('kind').value,ts:Date.now(),fo:cur||''};if(lkv)o.link=lkv;
     if(f){if(!assets)throw new Error('رفع الملفات مش متاح');const r=await assets.upload(f,(i,n)=>{$('pub').textContent='جاري الرفع '+i+'/'+n});o.fid=r.id;o.n=r.n;o.sz=r.size;o.fname=f.name;o.ftype=r.type||f.type||''}
     await db.collection('posts').doc('p'+o.ts).set(o);
-    $('txt').value='';$('fl').value=''
-  }catch(x){e.textContent=x.code==='permission-denied'?'مفيش صلاحية: ادخل بإيميل الأدمن وتأكد إن الرولز اتنشرت':'حصلت مشكلة: '+(x.message||'')}
+    $('txt').value='';$('fl').value='';$('lk').value=''
+  }catch(x){e.textContent=x.code==='permission-denied'?'مفيش صلاحية: ادخل بإيميل الأدمن وتأكد إن الرولز اتنشرت':'حصلت مشكلة ('+(x.code||'')+'): '+(x.message||'')}
   $('pub').disabled=false;$('pub').textContent='نشر'
 };
 
@@ -176,16 +178,18 @@ function render(){
     return `<div class="glass post"><div class="ph"><div class="av">إ</div><div><b>الإدارة</b><span class="tag">${esc(p.kind||'')}</span><small>${ago(p.ts)}</small></div>${role==='admin'?`<button class="ghost" style="flex:none;padding:6px 10px" data-del="${p.id}">${arm===p.id?'تأكيد؟':'🗑️'}</button>`:''}</div>
     ${p.text?`<div class="pt">${esc(p.text).replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" rel="noopener" style="color:var(--gold2)">$1</a>')}</div>`:''}
     ${img?`<img class="pimg" data-fid="${p.fid}" data-n="${p.n}" data-t="${esc(p.ftype)}" src="${BL[p.fid]||''}" alt="">`:''}
-    ${pdf?`<div class="pdf"><img data-pv="${p.fid}" data-n="${p.n}" src="${PV[p.fid]||''}" alt=""><div class="pm"><span>📕</span><div><b>${esc(p.fname)}</b><small style="display:block;color:var(--mu)">PDF${p.sz?' · '+(p.sz/1048576).toFixed(1)+' ميجا':''}</small></div></div><div class="pb"><button data-open="${p.id}">👁️ عرض</button><button class="ghost" data-dl="${p.id}">⬇️ تحميل</button></div></div>`:''}${p.fid&&!img&&!pdf?`<div class="file" data-dl="${p.id}"><span style="font-size:1.6rem">📄</span><div><b>${esc(p.fname)}</b><small style="display:block;color:var(--mu)">اضغط للتحميل</small></div></div>`:''}
+    ${p.link?`<div class="pdf"><div class="pm"><span>🔗</span><div><b>${did(p.link)?'ملف على Google Drive':'رابط'}</b><small style="display:block;color:var(--mu)" dir="ltr">${esc(p.link.slice(0,45))}</small></div></div>${vw[p.id]&&did(p.link)?`<iframe src="https://drive.google.com/file/d/${did(p.link)}/preview" style="width:100%;height:440px;border:0;background:#fff"></iframe>`:''}<div class="pb">${did(p.link)?`<button data-vw="${p.id}">${vw[p.id]?'إخفاء':'👁️ عرض هنا'}</button>`:''}<button class="ghost" data-lnk="${p.id}">↗ فتح الرابط</button></div></div>`:''}${pdf?`<div class="pdf"><img data-pv="${p.fid}" data-n="${p.n}" src="${PV[p.fid]||''}" alt=""><div class="pm"><span>📕</span><div><b>${esc(p.fname)}</b><small style="display:block;color:var(--mu)">PDF${p.sz?' · '+(p.sz/1048576).toFixed(1)+' ميجا':''}</small></div></div><div class="pb"><button data-open="${p.id}">👁️ عرض</button><button class="ghost" data-dl="${p.id}">⬇️ تحميل</button></div></div>`:''}${p.fid&&!img&&!pdf?`<div class="file" data-dl="${p.id}"><span style="font-size:1.6rem">📄</span><div><b>${esc(p.fname)}</b><small style="display:block;color:var(--mu)">اضغط للتحميل</small></div></div>`:''}
     ${lk.length?`<div class="rs" data-who="${p.id}"><span>${[...new Set(lk.map(l=>l.r||'👍'))].slice(0,3).join('')}</span> ${lk.length}</div>`:''}${who[p.id]&&lk.length?`<div class="cm">${lk.map(l=>`<div>${l.r||'👍'} <b>${esc(l.name)}</b></div>`).join('')}</div>`:''}<div class="bar"><button class="${mine?'on':''}" data-lk="${p.id}">${mine?(mr.r||'👍'):'👍'} ${mine?'تفاعلت':'تفاعل'}</button><button data-cm="${p.id}">💬 تعليق ${cs.length||''}</button></div>${pk[p.id]?`<div class="pick">${RX.map(x=>`<span data-rx="${x}" data-p="${p.id}">${x}</span>`).join('')}</div>`:''}
     ${open[p.id]?`<div>${cs.map(c=>`<div class="cm">${role==='admin'?`<i data-delc="${c.id}" style="cursor:pointer;float:left;font-style:normal;font-size:.8rem">${arm===c.id?'تأكيد الحذف؟':'🗑️'}</i>`:''}<b>${esc(c.name)}</b>: ${esc(c.text)}</div>`).join('')}<div class="row" style="margin-top:8px"><input id="ci${p.id}" placeholder="اكتب تعليق..."><button style="flex:none" data-sc="${p.id}">إرسال</button></div></div>`:''}</div>`}).join('');
 }
 $('feed').addEventListener('click',async e=>{
-  const t=e.target.closest('[data-lk],[data-cm],[data-sc],[data-del],[data-dl],[data-back],[data-fo],[data-delf],[data-rx],[data-who],[data-delc],[data-open]');if(!t||!db)return;
+  const t=e.target.closest('[data-lk],[data-cm],[data-sc],[data-del],[data-dl],[data-back],[data-fo],[data-delf],[data-rx],[data-who],[data-delc],[data-open],[data-vw],[data-lnk]');if(!t||!db)return;
   const d=t.dataset;
   if(d.lk){pk[d.lk]=!pk[d.lk];render()}
   else if(d.delc){if(arm===d.delc){arm='';await db.collection('comments').doc(d.delc).delete()}else{arm=d.delc;render()}}
   else if(d.open){const p=P.find(x=>x.id===d.open);if(p){const w=window.open('','_blank');try{const u=URL.createObjectURL(await getB(p));if(w)w.location=u;else save(p)}catch(x){if(w)w.close()}}}
+  else if(d.vw){vw[d.vw]=!vw[d.vw];render()}
+  else if(d.lnk){const p=P.find(x=>x.id===d.lnk);if(p&&/^https:\/\//i.test(p.link||''))window.open(p.link,'_blank','noopener')}
   else if(d.who){who[d.who]=!who[d.who];render()}
   else if(d.rx){const id=d.p,r=db.collection('likes').doc(id+'_'+uid),my=L.find(l=>l.id===id+'_'+uid);pk[id]=false;(my&&(my.r||'👍')===d.rx)?await r.delete():await r.set({post:id,name,r:d.rx,ts:Date.now()});render()}
   else if(d.cm){open[d.cm]=!open[d.cm];render()}
