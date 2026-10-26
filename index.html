@@ -49,23 +49,25 @@ header small{display:block;color:var(--mu);font-weight:400}
 <div class="orb o1"></div><div class="orb o2"></div>
 <div class="wrap">
 
-<div id="login" class="glass login">
+<div id="login" class="glass login hide">
   <img class="logo" data-l alt="شعار كلية الحقوق">
   <h1>طلاب الفرقة الثالثة</h1>
   <p class="sub">كلية الحقوق – جامعة المنصورة</p>
-  <input id="u" placeholder="اسم المستخدم أو إيميل الأدمن" autocomplete="off" autocapitalize="off">
+  <input id="u" placeholder="إيميل الأدمن" type="email" autocomplete="off" autocapitalize="off">
   <input id="p" type="password" placeholder="كلمة المرور" autocomplete="off">
   <div class="err" id="e1"></div>
   <button class="full" id="go">دخول</button>
+  <button class="ghost full" id="bk">رجوع</button>
 </div>
 
-<div id="gate" class="glass login hide">
+<div id="gate" class="glass login">
   <img class="logo" data-l alt="">
   <h1>أهلاً بيك 👋</h1>
   <p class="sub">اكتب اسمك الأول والأخير ورقم موبايلك علشان تدخل</p>
   <input id="fn" placeholder="الاسم الأول"><input id="ln" placeholder="الاسم الأخير"><input id="ph" type="tel" inputmode="numeric" maxlength="11" dir="ltr" placeholder="رقم الموبايل (11 رقم)">
   <div class="err" id="e2"></div>
-  <button class="full" id="ok">متابعة</button>
+  <button class="full" id="ok">دخول</button>
+  <button class="ghost full" id="adm">دخول الأدمن</button>
 </div>
 
 <div id="app" class="hide">
@@ -111,7 +113,7 @@ async function save(p){const t=$('toast');try{t.textContent='جاري التحم
 const rmP=async x=>{if(x.fid)for(let i=0;i<x.n;i++)await db.collection('blobs').doc(x.fid+'_'+i).delete();await db.collection('posts').doc(x.id).delete()};
 let subs=0;
 function subscribe(){if(subs)return;subs=1;const sub=(n,f)=>db.collection(n).onSnapshot(s=>{f(s.docs.map(d=>({id:d.id,...d.data()})));render()},()=>{});
-  sub('posts',x=>P=x);sub('likes',x=>L=x);sub('comments',x=>C=x);if(role==='admin')sub('members',x=>M=x)}
+  sub('posts',x=>P=x);if(role==='admin')sub('members',x=>M=x)}
 onAuthStateChanged(auth,u=>{if(!u||role)return;uid=u.uid;
   if(u.email&&u.email===ADMIN){role='admin';name='الإدارة';start()}
   else if(u.isAnonymous&&lsGet('lawname')){role='guest';name=lsGet('lawname');start()}});
@@ -119,9 +121,10 @@ onAuthStateChanged(auth,u=>{if(!u||role)return;uid=u.uid;
 $('go').onclick=async()=>{
   const u=$('u').value.trim(),p=$('p').value,er=$('e1');er.textContent='';
   if(u.includes('@')){try{const c=await signInWithEmailAndPassword(auth,u,p);if(c.user.email!==ADMIN){await signOut(auth);throw 0}role='admin';name='الإدارة';uid=c.user.uid;start()}catch(x){er.textContent='بيانات الأدمن غلط'}}
-  else if(u==='law'&&p==='myu'){$('login').classList.add('hide');$('gate').classList.remove('hide')}
   else er.textContent='بيانات الدخول غلط، جرّب تاني';
 };
+$('adm').onclick=()=>{$('gate').classList.add('hide');$('login').classList.remove('hide')};
+$('bk').onclick=()=>{$('login').classList.add('hide');$('gate').classList.remove('hide')};
 $('p').onkeydown=e=>{if(e.key==='Enter')$('go').click()};
 $('ok').onclick=async()=>{
   const er=$('e2');er.textContent='';
@@ -173,14 +176,12 @@ function render(){
   else if(FO.length)top='<div class="folders">'+FO.sort((a,b)=>a.ts-b.ts).map(f=>`<div class="fol" data-fo="${f.id}"><span>📁</span><b>${esc(f.text)}</b><small>${P.filter(p=>!p.isf&&p.fo===f.id).length} منشور</small>${role==='admin'?`<i data-delf="${f.id}">${arm===f.id?'تأكيد الحذف؟':'🗑️'}</i>`:''}</div>`).join('')+'</div>';
   const none=PO.length?'':cur?'<div class="empty glass">المجلد فاضي 📭</div>':FO.length?'':'<div class="empty glass">لسه مفيش منشورات 📭</div>';
   el.innerHTML=top+none+[...PO].sort((a,b)=>b.ts-a.ts).map(p=>{
-    const lk=L.filter(l=>l.post===p.id),mr=lk.find(l=>l.id===p.id+'_'+uid),mine=!!mr,cs=C.filter(c=>c.post===p.id).sort((a,b)=>a.ts-b.ts);
-    const img=p.fid&&(p.ftype||'').startsWith('image/'),pdf=p.fid&&((p.ftype||'')==='application/pdf'||/\.pdf$/i.test(p.fname||''));
+        const img=p.fid&&(p.ftype||'').startsWith('image/'),pdf=p.fid&&((p.ftype||'')==='application/pdf'||/\.pdf$/i.test(p.fname||''));
     return `<div class="glass post"><div class="ph"><div class="av">إ</div><div><b>الإدارة</b><span class="tag">${esc(p.kind||'')}</span><small>${ago(p.ts)}</small></div>${role==='admin'?`<button class="ghost" style="flex:none;padding:6px 10px" data-del="${p.id}">${arm===p.id?'تأكيد؟':'🗑️'}</button>`:''}</div>
     ${p.text?`<div class="pt">${esc(p.text).replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" rel="noopener" style="color:var(--gold2)">$1</a>')}</div>`:''}
     ${img?`<img class="pimg" data-fid="${p.fid}" data-n="${p.n}" data-t="${esc(p.ftype)}" src="${BL[p.fid]||''}" alt="">`:''}
     ${p.link?`<div class="pdf"><div class="pm"><span>🔗</span><div><b>${did(p.link)?'ملف على Google Drive':'رابط'}</b><small style="display:block;color:var(--mu)" dir="ltr">${esc(p.link.slice(0,45))}</small></div></div>${vw[p.id]&&did(p.link)?`<iframe src="https://drive.google.com/file/d/${did(p.link)}/preview" style="width:100%;height:440px;border:0;background:#fff"></iframe>`:''}<div class="pb">${did(p.link)?`<button data-vw="${p.id}">${vw[p.id]?'إخفاء':'👁️ عرض هنا'}</button>`:''}<button class="ghost" data-lnk="${p.id}">↗ فتح الرابط</button></div></div>`:''}${pdf?`<div class="pdf"><img data-pv="${p.fid}" data-n="${p.n}" src="${PV[p.fid]||''}" alt=""><div class="pm"><span>📕</span><div><b>${esc(p.fname)}</b><small style="display:block;color:var(--mu)">PDF${p.sz?' · '+(p.sz/1048576).toFixed(1)+' ميجا':''}</small></div></div><div class="pb"><button data-open="${p.id}">👁️ عرض</button><button class="ghost" data-dl="${p.id}">⬇️ تحميل</button></div></div>`:''}${p.fid&&!img&&!pdf?`<div class="file" data-dl="${p.id}"><span style="font-size:1.6rem">📄</span><div><b>${esc(p.fname)}</b><small style="display:block;color:var(--mu)">اضغط للتحميل</small></div></div>`:''}
-    ${lk.length?`<div class="rs" data-who="${p.id}"><span>${[...new Set(lk.map(l=>l.r||'👍'))].slice(0,3).join('')}</span> ${lk.length}</div>`:''}${who[p.id]&&lk.length?`<div class="cm">${lk.map(l=>`<div>${l.r||'👍'} <b>${esc(l.name)}</b></div>`).join('')}</div>`:''}<div class="bar"><button class="${mine?'on':''}" data-lk="${p.id}">${mine?(mr.r||'👍'):'👍'} ${mine?'تفاعلت':'تفاعل'}</button><button data-cm="${p.id}">💬 تعليق ${cs.length||''}</button></div>${pk[p.id]?`<div class="pick">${RX.map(x=>`<span data-rx="${x}" data-p="${p.id}">${x}</span>`).join('')}</div>`:''}
-    ${open[p.id]?`<div>${cs.map(c=>`<div class="cm">${role==='admin'?`<i data-delc="${c.id}" style="cursor:pointer;float:left;font-style:normal;font-size:.8rem">${arm===c.id?'تأكيد الحذف؟':'🗑️'}</i>`:''}<b>${esc(c.name)}</b>: ${esc(c.text)}</div>`).join('')}<div class="row" style="margin-top:8px"><input id="ci${p.id}" placeholder="اكتب تعليق..."><button style="flex:none" data-sc="${p.id}">إرسال</button></div></div>`:''}</div>`}).join('');
+    </div>`}).join('');
 }
 $('feed').addEventListener('click',async e=>{
   const t=e.target.closest('[data-lk],[data-cm],[data-sc],[data-del],[data-dl],[data-back],[data-fo],[data-delf],[data-rx],[data-who],[data-delc],[data-open],[data-vw],[data-lnk]');if(!t||!db)return;
